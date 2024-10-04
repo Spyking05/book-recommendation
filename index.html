@@ -4,63 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Recommendation System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .results {
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Book Recommendation System</h1>
-    
-    <!-- Form for getting user preferences -->
-    <form id="recommendationForm">
-        <label for="query">Search for Books:</label>
-        <input type="text" id="query" name="query" required><br><br>
+    <div class="container">
+        <h1>Book Recommendation System</h1>
+        <form id="search-form">
+            <label for="query">Search for Books:</label>
+            <input type="text" id="query" name="query" placeholder="Enter a search term" required>
+            
+            <label for="genre">Preferred Genre:</label>
+            <input type="text" id="genre" name="genre" placeholder="Enter preferred genre (optional)">
+            
+            <label for="author">Preferred Author:</label>
+            <input type="text" id="author" name="author" placeholder="Enter preferred author (optional)">
+            
+            <button type="submit">Get Recommendations</button>
+        </form>
+        
+        <div class="results" id="results"></div>
+    </div>
 
-        <label for="genre">Preferred Genre:</label>
-        <input type="text" id="genre" name="genre"><br><br>
-
-        <label for="author">Preferred Author:</label>
-        <input type="text" id="author" name="author"><br><br>
-
-        <button type="submit">Get Recommendations</button>
-    </form>
-
-    <!-- Section to display the recommendations -->
-    <div id="recommendations"></div>
-
-    <!-- Script to handle form submission and display recommendations -->
     <script>
-        document.getElementById('recommendationForm').onsubmit = async function(event) {
-            event.preventDefault();
+        document.getElementById('search-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const query = document.getElementById('query').value;
+            const genre = document.getElementById('genre').value;
+            const author = document.getElementById('author').value;
 
-            let query = document.getElementById('query').value;
-            let genre = document.getElementById('genre').value;
-            let author = document.getElementById('author').value;
-
-            let response = await fetch('/recommend', {
+            fetch('/recommend', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    query: query,
-                    genre: genre,
-                    author: author
-                })
-            });
-
-            let data = await response.json();
-
-            let recommendationsDiv = document.getElementById('recommendations');
-            recommendationsDiv.innerHTML = '<h2>Recommendations:</h2>';
-
-            if (data.recommendations.length > 0) {
-                data.recommendations.forEach(book => {
-                    let bookElement = document.createElement('p');
-                    bookElement.innerText = book;
-                    recommendationsDiv.appendChild(bookElement);
-                });
-            } else {
-                recommendationsDiv.innerHTML += '<p>No recommendations found based on your preferences.</p>';
-            }
-        };
+                body: JSON.stringify({ query, genre, author })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = '';
+                if (data.recommendations.length > 0) {
+                    data.recommendations.forEach(book => {
+                        const bookDiv = document.createElement('div');
+                        bookDiv.innerHTML = `<strong>${book.title}</strong> by ${book.author} (${book.genre})`;
+                        resultsDiv.appendChild(bookDiv);
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<p>No recommendations found.</p>';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
     </script>
 </body>
 </html>
