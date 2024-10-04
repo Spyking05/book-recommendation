@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Recommendation System</title>
+</head>
+<body>
+    <h1>Book Recommendation System</h1>
+    
+    <!-- Form for getting user preferences -->
+    <form id="recommendationForm">
+        <label for="query">Search for Books:</label>
+        <input type="text" id="query" name="query" required><br><br>
+
+        <label for="genre">Preferred Genre:</label>
+        <input type="text" id="genre" name="genre"><br><br>
+
+        <label for="author">Preferred Author:</label>
+        <input type="text" id="author" name="author"><br><br>
+
+        <button type="submit">Get Recommendations</button>
+    </form>
+
+    <!-- Section to display the recommendations -->
+    <div id="recommendations"></div>
+
+    <!-- Script to handle form submission and display recommendations -->
+    <script>
+        document.getElementById('recommendationForm').onsubmit = async function(event) {
+            event.preventDefault();
+
+            let query = document.getElementById('query').value;
+            let genre = document.getElementById('genre').value;
+            let author = document.getElementById('author').value;
+
+            let response = await fetch('/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    query: query,
+                    genre: genre,
+                    author: author
+                })
+            });
+
+            let data = await response.json();
+
+            let recommendationsDiv = document.getElementById('recommendations');
+            recommendationsDiv.innerHTML = '<h2>Recommendations:</h2>';
+
+            if (data.recommendations.length > 0) {
+                data.recommendations.forEach(book => {
+                    let bookElement = document.createElement('p');
+                    bookElement.innerText = book;
+                    recommendationsDiv.appendChild(bookElement);
+                });
+            } else {
+                recommendationsDiv.innerHTML += '<p>No recommendations found based on your preferences.</p>';
+            }
+        };
+    </script>
+</body>
+</html>
